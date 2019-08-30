@@ -38,8 +38,11 @@
             this.importImage = new System.Windows.Forms.ToolStripMenuItem();
             this.exportImage = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.getTheFuckOutXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuEdit = new System.Windows.Forms.ToolStripMenuItem();
+            this.drawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.showPalette = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,9 +67,6 @@
             this.canvasBox = new System.Windows.Forms.PictureBox();
             this.openTgr = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
-            this.drawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).BeginInit();
             this.SuspendLayout();
@@ -95,7 +95,7 @@
             this.importImage,
             this.exportImage,
             this.toolStripSeparator2,
-            this.getTheFuckOutXToolStripMenuItem});
+            this.exit});
             this.menuFile.Name = "menuFile";
             this.menuFile.Size = new System.Drawing.Size(37, 20);
             this.menuFile.Text = "&File";
@@ -152,13 +152,13 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
-            // getTheFuckOutXToolStripMenuItem
+            // exit
             // 
-            this.getTheFuckOutXToolStripMenuItem.Name = "getTheFuckOutXToolStripMenuItem";
-            this.getTheFuckOutXToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.getTheFuckOutXToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.getTheFuckOutXToolStripMenuItem.Text = "E&xit";
-            this.getTheFuckOutXToolStripMenuItem.Click += new System.EventHandler(this.GetTheFuckOutXToolStripMenuItem_Click);
+            this.exit.Name = "exit";
+            this.exit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+            this.exit.Size = new System.Drawing.Size(180, 22);
+            this.exit.Text = "E&xit";
+            this.exit.Click += new System.EventHandler(this.Exit_Click);
             // 
             // menuEdit
             // 
@@ -173,22 +173,48 @@
             this.menuEdit.Size = new System.Drawing.Size(39, 20);
             this.menuEdit.Text = "&Edit";
             // 
+            // drawToolStripMenuItem
+            // 
+            this.drawToolStripMenuItem.Checked = true;
+            this.drawToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.drawToolStripMenuItem.Name = "drawToolStripMenuItem";
+            this.drawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.drawToolStripMenuItem.Tag = VGAPainter.DrawMode.Pixel;
+            this.drawToolStripMenuItem.Text = "&Draw";
+            this.drawToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
+            // fillToolStripMenuItem
+            // 
+            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
+            this.fillToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
+            this.fillToolStripMenuItem.Text = "&Fill";
+            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
+            // pixerToolStripMenuItem
+            // 
+            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
+            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pixerToolStripMenuItem.Tag = VGAPainter.DrawMode.Picker;
+            this.pixerToolStripMenuItem.Text = "&Picker";
+            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(145, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // showPalette
             // 
             this.showPalette.Name = "showPalette";
-            this.showPalette.Size = new System.Drawing.Size(148, 22);
+            this.showPalette.Size = new System.Drawing.Size(180, 22);
             this.showPalette.Text = "&Show Palette";
             this.showPalette.Click += new System.EventHandler(this.ShowPalette_Click);
             // 
             // loadPaletteToolStripMenuItem
             // 
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadPaletteToolStripMenuItem.Text = "&Load Palette...";
             // 
             // menuView
@@ -361,32 +387,6 @@
             // 
             this.openFileDialog2.FileName = "openFileDialog2";
             // 
-            // drawToolStripMenuItem
-            // 
-            this.drawToolStripMenuItem.Checked = true;
-            this.drawToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.drawToolStripMenuItem.Name = "drawToolStripMenuItem";
-            this.drawToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.drawToolStripMenuItem.Tag = VGAPainter.DrawMode.Pixel;
-            this.drawToolStripMenuItem.Text = "&Draw";
-            this.drawToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // fillToolStripMenuItem
-            // 
-            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
-            this.fillToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
-            this.fillToolStripMenuItem.Text = "&Fill";
-            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // pixerToolStripMenuItem
-            // 
-            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
-            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.pixerToolStripMenuItem.Tag = VGAPainter.DrawMode.Picker;
-            this.pixerToolStripMenuItem.Text = "&Picker";
-            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -416,7 +416,7 @@
         private System.Windows.Forms.ToolStripMenuItem importImage;
         private System.Windows.Forms.ToolStripMenuItem exportImage;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem getTheFuckOutXToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exit;
         private System.Windows.Forms.ToolStripMenuItem menuEdit;
         private System.Windows.Forms.ToolStripMenuItem drawToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fillToolStripMenuItem;

@@ -411,7 +411,7 @@ namespace VGAPainter
 
         }
 
-        private void GetTheFuckOutXToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Exit_Click(object sender, EventArgs e)
         {
             this.Close();
         }
