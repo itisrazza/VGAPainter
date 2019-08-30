@@ -283,12 +283,12 @@ namespace VGAPainter
             if (result != DialogResult.OK) return;
 
             // open the image
-            Stream file = new FileStream(saveTgr.FileName, FileMode.Open);
+            Stream file = new FileStream(openTgr.FileName, FileMode.Open);
             BinaryReader br = new BinaryReader(file, Encoding.ASCII);
 
             // first check the header
             char[] header = br.ReadChars(FileHeader.Length);
-            if (header != FileHeader.ToCharArray()) throw new Exception("Invalid format");
+            if (new string(header) != FileHeader) throw new Exception("Invalid format");
 
             // read the width and height
             bmWidth = br.ReadUInt16();
@@ -299,6 +299,8 @@ namespace VGAPainter
 
             // done
             br.Close();
+
+            Redraw();
         }
 
         private void SaveImage_Click(object sender, EventArgs e)
@@ -352,6 +354,7 @@ namespace VGAPainter
 
             // pre-calc image offset
             int offset = mouseY * bmWidth + mouseX;
+            if (offset < 0 || offset >= bmData.Length) return;
 
             switch (drawMode)
             {
@@ -408,7 +411,8 @@ namespace VGAPainter
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            MessageBox.Show("VGAPainter by thegreatrazz\n" +
+                "https://github.com/thegreatrazz/VGAPainter");
         }
 
         private void Exit_Click(object sender, EventArgs e)
