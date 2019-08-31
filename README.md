@@ -1,7 +1,8 @@
 # Raresh's VGA Painter
 
-[![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-2.png)](http://www.wtfpl.net/)
-[![Build Status](https://travis-ci.org/thegreatrazz/VGAPainter.svg?branch=master)](https://travis-ci.org/thegreatrazz/VGAPainter)
+[![License: WTFPL](https://img.shields.io/github/license/thegreatrazz/VGAPainter?style=flat-square)](LICENSE.txt)
+[![Travis Build Status](https://img.shields.io/travis/thegreatrazz/VGAPainter?style=flat-square)](https://travis-ci.org/thegreatrazz/VGAPainter)
+[![Download](https://img.shields.io/github/downloads/thegreatrazz/VGAPainter/total?style=flat-square)](https://github.com/thegreatrazz/VGAPainter/releases)
 
 This is nothing but a simple and barebones application (which I've quickly written in WinForms because I don't know any other application framework which allows me to get a project up and going like this) which lets me make graphics for games and applications running in VGA 256-color mode (aka `INT 10h`).
 
@@ -13,14 +14,5 @@ It's not as feature complete as I'd like, but below is a wishlist of quality fea
 
 ## Wishlist
 
-* Continuous integration (I want to use this on my laptop where there is no Visual Studio)
 * Using alternate 256-color palettes (could come up with an alternate `TGRP` format for storing palettes)
-* More shortcut keys (I forgot to add them for the tools)
 * More tools (flood fill isn't implemented, I also want rectangles and lines)
-* Undo, Redo (This was covered in COMP103, I want to see how it's done in C#.NET)
-
-## Closing Notes
-
-I've got a build in Releases, but it's very rough around the edges.
-
-I also don't care about this project. Any issues will only be dealt with if I have time.
