@@ -1,4 +1,4 @@
-lang: csharp
+language: csharp
 solution: VGAPainter.sln
 deploy:
   provider: releases
