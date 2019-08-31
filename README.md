@@ -1,6 +1,7 @@
 # Raresh's VGA Painter
 
 [![WTFPL](http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-2.png)](http://www.wtfpl.net/)
+[![Build Status](https://travis-ci.org/thegreatrazz/VGAPainter.svg?branch=master)](https://travis-ci.org/thegreatrazz/VGAPainter)
 
 This is nothing but a simple and barebones application (which I've quickly written in WinForms because I don't know any other application framework which allows me to get a project up and going like this) which lets me make graphics for games and applications running in VGA 256-color mode (aka `INT 10h`).
 
