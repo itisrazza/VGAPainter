@@ -1,0 +1,11 @@
+lang: csharp
+solution: VGAPainter.sln
+deploy:
+  provider: releases
+  api_key:
+    secure: "Ejy3+jZqSieXHnRZvNospkF6COWYvD8DFVBKz6QyEf8+BmQoQqG0jVsuIWABP3QUBdOX+T5IV205VEQ8JgRJFcjy77MLYxr6hlaLLQr6gupURnW/uRCVORq3oeDCQ+8NC2fPEQtiHRWjRDowI0I8rBWaUKJ+rCz8ssE/MDV3CwJz77t6XUtskrHJxdsfrTBDHJhS99iOedPza2NTeAU8wMFrdKavFt2JlK2RA9PZJGf7y+uzDnVC8L8UexU+oKBvg2AA80GbavleCsAGoROXuOwEjGpJQUszPN0pVIYNrOHl+ATr50p8o0k8IF2ob/c4hmJsQRLNCxl0D2F20uEJxGScvqkcnJo1LGYkiySa/9jLRIlKnVh+wH0MD0yr2MXW8CZNdvNE6nvlOyRI0Y2RtQk9yF4c4CEFelDn/4LEFXwrbaowPpuyAuPkmBCVqdczrgGH9xFw9ljAn3Nmyawfa77cu6ewPZeM/iR8QI26/NVAPg82Zvwlq8aJ+dmNMaOH0lo2ufqiynplLa6ikNC3AKBGo5RJ9Ho4kvLnGc/TIW3RdUljbn3szb8tEh1UgK2s6Trt+Ozh9rL4TmVAEPYU9sjn4t4472dWpfqcrRXt4ODOhbeO34ho6YwO1t1EWLykxPrKbmRS9+hOLKHSfnIY59YkjeyLYs+RaJf2FNyMIqY="
+  file: "VGAPainter/bin/Release/VGAPainter.exe"
+  skip_cleanup: true
+  draft: true
+  on:
+    tags: true

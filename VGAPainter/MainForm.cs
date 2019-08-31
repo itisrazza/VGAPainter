@@ -20,12 +20,25 @@ namespace VGAPainter
 
     public partial class MainForm : Form
     {
+        // VGA palette
         private Color[] vgaPalette;
+
+        // VGA bitmap
         private int bmWidth = 16, bmHeight = 16;
         private byte[] bmData = new byte[256];
+
+        // canvas properties
         private int zoom = 5;
+        private int offsetX = 0;
+        private int offsetY = 0;
+
+        // mouse actions
         private bool mouseDraw = false;
         private DrawMode drawMode;
+
+        // user action history stacks
+        private Stack<HistoryEvent> undoStack = new Stack<HistoryEvent>();
+        private Stack<HistoryEvent> redoStack = new Stack<HistoryEvent>();
 
         public MainForm()
         {
@@ -51,8 +64,9 @@ namespace VGAPainter
                 imgList.Images.Add(bm);
             }
 
-            // draw the empty image
+            // a few UI things
             Redraw();
+            UpdateStackButtons();
         }
 
         #region VGA Palette Generation
@@ -191,6 +205,10 @@ namespace VGAPainter
                 bmData[i] = (byte)i;
             }
 
+            // clear the history stacks
+            undoStack.Clear();
+            redoStack.Clear();
+
             Redraw();
         }
 
@@ -207,24 +225,27 @@ namespace VGAPainter
 
             // create .NET bitmap
             Bitmap bm = new Bitmap(bmWidth * scale, bmHeight * scale);
-            Graphics gfx = Graphics.FromImage(bm);
 
             // copy the pixels
-            for (int y = 0; y < bmHeight; y++)
-                for (int x = 0; x < bmWidth; x++)
+            for (int y = 0; y < bm.Height; y += scale)
+                for (int x = 0; x < bm.Width; x += scale)
                 {
-                    Color pixel = vgaPalette[bmData[y * bmWidth + x]];
-                    gfx.FillRectangle(new SolidBrush(pixel), x * scale, y * scale, scale, scale);
+                    Color pixel = vgaPalette[bmData[y / scale * bmWidth + (x / scale)]];
+                    for (int py = 0; py < scale; py++)
+                        for (int px = 0; px < scale; px++)
+                            bm.SetPixel(x + px, y + py, pixel);
                 }
 
             // draw a grid
             if (grid && scale > 1)
             {
-                Pen gridPen = Pens.Gray;
+                Color gridColor = Color.Gray;
                 for (int x = scale - 1; x < bm.Width; x += scale)
-                    gfx.DrawLine(gridPen, x, 0, x, bm.Height);
+                    for (int y = 0; y < bm.Height; y++)
+                        bm.SetPixel(x, y, gridColor);
                 for (int y = scale - 1; y < bm.Height; y += scale)
-                    gfx.DrawLine(gridPen, 0, y, bm.Width, y);
+                    for (int x = 0; x < bm.Width; x++)
+                        bm.SetPixel(x, y, gridColor);
             }
 
             return bm;
@@ -234,7 +255,7 @@ namespace VGAPainter
         /// Redraws the canvas
         /// </summary>
         private void Redraw()
-        {
+        {   
             canvasBox.Image = RenderBitmap(zoom, showGrid.Checked);
         }
 
@@ -300,6 +321,11 @@ namespace VGAPainter
             // done
             br.Close();
 
+            // clear the history stacks
+            undoStack.Clear();
+            redoStack.Clear();
+
+            // redraw the bitmap
             Redraw();
         }
 
@@ -359,7 +385,11 @@ namespace VGAPainter
             switch (drawMode)
             {
                 case DrawMode.Pixel:
+                    var oldColor = bmData[offset];
+                    if (color == oldColor) break;   // do nothing if the color is the same
                     bmData[offset] = color;
+                    undoStack.Push(new HistoryEvent(new PixelChange(offset, oldColor, color)));
+                    redoStack.Clear();
                     break;
                 case DrawMode.Picker:
                     colorSelector.Items[bmData[offset]].Selected = true;
@@ -369,6 +399,7 @@ namespace VGAPainter
             }
 
             Redraw();
+            UpdateStackButtons();
         }
 
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -411,13 +442,56 @@ namespace VGAPainter
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("VGAPainter by thegreatrazz\n" +
-                "https://github.com/thegreatrazz/VGAPainter");
+            MessageBox.Show(this, "VGAPainter by thegreatrazz\n" +
+                "https://github.com/thegreatrazz/VGAPainter",
+                "About VGA Painter");
         }
 
         private void Exit_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void UpdateStackButtons()
+        {
+            undoAction.Enabled = undoStack.Count > 0;
+            redoAction.Enabled = redoStack.Count > 0;
+        }
+
+        private void UndoAction_Click(object sender, EventArgs e)
+        {
+            if (undoStack.Count <= 0) return;
+            var action = undoStack.Pop();
+
+            // undo it
+            foreach (var change in action.changes)
+            {
+                bmData[change.Offset] = change.OldColor;
+            }
+
+            // put it on the redo stack
+            redoStack.Push(action);
+
+            Redraw();
+            UpdateStackButtons();
+        }
+
+        private void RedoAction_Click(object sender, EventArgs e)
+        {
+            if (redoStack.Count <= 0) return;
+            var action = redoStack.Pop();
+
+            // undo it
+            foreach (var change in action.changes)
+            {
+                bmData[change.Offset] = change.NewColor;
+            }
+
+            // put it on the redo stack
+            undoStack.Push(action);
+
+            Redraw();
+            UpdateStackButtons();
         }
 
         private void DrawTool_Select(object sender, EventArgs e)
