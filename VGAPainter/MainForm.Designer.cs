@@ -44,6 +44,9 @@
             this.undoAction = new System.Windows.Forms.ToolStripMenuItem();
             this.redoAction = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.drawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.showPalette = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,9 +71,6 @@
             this.canvasBox = new System.Windows.Forms.PictureBox();
             this.openTgr = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
-            this.drawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).BeginInit();
@@ -186,7 +186,7 @@
             // 
             this.undoAction.Name = "undoAction";
             this.undoAction.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoAction.Size = new System.Drawing.Size(180, 22);
+            this.undoAction.Size = new System.Drawing.Size(148, 22);
             this.undoAction.Text = "&Undo";
             this.undoAction.Click += new System.EventHandler(this.UndoAction_Click);
             // 
@@ -194,24 +194,53 @@
             // 
             this.redoAction.Name = "redoAction";
             this.redoAction.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoAction.Size = new System.Drawing.Size(180, 22);
+            this.redoAction.Size = new System.Drawing.Size(148, 22);
             this.redoAction.Text = "&Redo";
             this.redoAction.Click += new System.EventHandler(this.RedoAction_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(145, 6);
+            // 
+            // drawToolStripMenuItem
+            // 
+            this.drawToolStripMenuItem.Checked = true;
+            this.drawToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.drawToolStripMenuItem.Name = "drawToolStripMenuItem";
+            this.drawToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.drawToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.drawToolStripMenuItem.Tag = VGAPainter.DrawMode.Pixel;
+            this.drawToolStripMenuItem.Text = "&Draw";
+            this.drawToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
+            // fillToolStripMenuItem
+            // 
+            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
+            this.fillToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F6;
+            this.fillToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
+            this.fillToolStripMenuItem.Text = "&Fill";
+            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
+            // pixerToolStripMenuItem
+            // 
+            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
+            this.pixerToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
+            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.pixerToolStripMenuItem.Tag = VGAPainter.DrawMode.Picker;
+            this.pixerToolStripMenuItem.Text = "&Picker";
+            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(145, 6);
             // 
             // showPalette
             // 
             this.showPalette.Name = "showPalette";
-            this.showPalette.Size = new System.Drawing.Size(180, 22);
+            this.showPalette.Size = new System.Drawing.Size(148, 22);
             this.showPalette.Text = "&Show Palette";
             this.showPalette.Click += new System.EventHandler(this.ShowPalette_Click);
             // 
@@ -219,7 +248,7 @@
             // 
             this.loadPaletteToolStripMenuItem.Enabled = false;
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.loadPaletteToolStripMenuItem.Text = "&Load Palette...";
             // 
             // menuView
@@ -391,35 +420,6 @@
             // 
             this.openFileDialog2.FileName = "openFileDialog2";
             // 
-            // drawToolStripMenuItem
-            // 
-            this.drawToolStripMenuItem.Checked = true;
-            this.drawToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.drawToolStripMenuItem.Name = "drawToolStripMenuItem";
-            this.drawToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.drawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.drawToolStripMenuItem.Tag = VGAPainter.DrawMode.Pixel;
-            this.drawToolStripMenuItem.Text = "&Draw";
-            this.drawToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // fillToolStripMenuItem
-            // 
-            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
-            this.fillToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F6;
-            this.fillToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
-            this.fillToolStripMenuItem.Text = "&Fill";
-            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // pixerToolStripMenuItem
-            // 
-            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
-            this.pixerToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
-            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.pixerToolStripMenuItem.Tag = VGAPainter.DrawMode.Picker;
-            this.pixerToolStripMenuItem.Text = "&Picker";
-            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
             // panel1
             // 
             this.panel1.AutoScroll = true;
@@ -443,6 +443,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "Raresh\'s VGA Painter";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).EndInit();

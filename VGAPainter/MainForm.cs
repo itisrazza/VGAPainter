@@ -27,11 +27,10 @@ namespace VGAPainter
         private int bmWidth = 16, bmHeight = 16;
         private byte[] bmData = new byte[256];
 
-        // canvas properties
+        // canvas
+        private Bitmap canvas;
         private int zoom = 5;
-        private int offsetX = 0;
-        private int offsetY = 0;
-
+        
         // mouse actions
         private bool mouseDraw = false;
         private DrawMode drawMode;
@@ -65,7 +64,7 @@ namespace VGAPainter
             }
 
             // a few UI things
-            Redraw();
+            FullRedraw();
             UpdateStackButtons();
         }
 
@@ -209,7 +208,7 @@ namespace VGAPainter
             undoStack.Clear();
             redoStack.Clear();
 
-            Redraw();
+            FullRedraw();
         }
 
         #endregion
@@ -252,16 +251,27 @@ namespace VGAPainter
         }
 
         /// <summary>
+        /// Redraws the canvas from scratch
+        /// </summary>
+        private void FullRedraw()
+        {
+            canvas = RenderBitmap(zoom, showGrid.Checked);
+            Redraw();
+        }
+
+        /// <summary>
         /// Redraws the canvas
         /// </summary>
         private void Redraw()
-        {   
-            canvasBox.Image = RenderBitmap(zoom, showGrid.Checked);
+        {
+            canvasBox.Image = canvas;
+            canvasBox.Refresh();
+            canvasBox.Update();
         }
 
         private void RedrawUITrigger(object sender, EventArgs e)
         {
-            Redraw();
+            FullRedraw();
         }
 
         #endregion
@@ -276,19 +286,19 @@ namespace VGAPainter
         private void ZoomIn_Click(object sender, EventArgs e)
         {
             zoom++;
-            Redraw();
+            FullRedraw();
         }
 
         private void ZoomOut_Click(object sender, EventArgs e)
         {
             if (zoom > 1) zoom--;
-            Redraw();
+            FullRedraw();
         }
 
         private void ZoomReset_Click(object sender, EventArgs e)
         {
             zoom = Int32.Parse((sender as ToolStripItem).Tag as string);
-            Redraw();
+            FullRedraw();
         }
 
         #endregion
@@ -333,6 +343,10 @@ namespace VGAPainter
         {
             // get the filename
             var result = saveTgr.ShowDialog(this);
+            if (result == DialogResult.Cancel && e is FormClosingEventArgs)
+            {
+                (e as FormClosingEventArgs).Cancel = true;
+            }
             if (result != DialogResult.OK) return;
 
             // save the image
@@ -378,17 +392,18 @@ namespace VGAPainter
             // don't do anything out of scope
             if (mouseX >= bmWidth || mouseY >= bmHeight) return;
 
-            // pre-calc image offset
+            // precalc offset and boundary check
             int offset = mouseY * bmWidth + mouseX;
             if (offset < 0 || offset >= bmData.Length) return;
+
+            // pixel changes to commit to history
+            var changes = new HashSet<PixelChange>();
 
             switch (drawMode)
             {
                 case DrawMode.Pixel:
-                    var oldColor = bmData[offset];
-                    if (color == oldColor) break;   // do nothing if the color is the same
-                    bmData[offset] = color;
-                    undoStack.Push(new HistoryEvent(new PixelChange(offset, oldColor, color)));
+                    var change = DrawPixel(mouseX, mouseY, color);
+                    if (change != null) changes.Add(change);
                     redoStack.Clear();
                     break;
                 case DrawMode.Picker:
@@ -398,8 +413,13 @@ namespace VGAPainter
                     throw new NotImplementedException("Draw mode " + drawMode.ToString() + " not implemented.");
             }
 
-            Redraw();
+            // undo/redo stack things
+            if (changes.Count > 0)
+                undoStack.Push(new HistoryEvent(changes));
             UpdateStackButtons();
+
+            // trigger canvasBox redraw
+            Redraw();
         }
 
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -412,7 +432,7 @@ namespace VGAPainter
             bmHeight = (int)newDialog.bmHeight.Value;
             bmData = new byte[bmWidth * bmHeight];
 
-            Redraw();
+            FullRedraw();
         }
         
         private void CanvasBox_MouseDown(object sender, MouseEventArgs e)
@@ -440,6 +460,29 @@ namespace VGAPainter
 
         #endregion
 
+        private PixelChange DrawPixel(int x, int y, byte color)
+        {
+            // precalc offset and check boundary
+            int offset = y * bmWidth + x;
+            if (offset < 0 || offset >= bmData.Length) return null;
+
+            // don't do anything if the pixel is the same
+            if (bmData[offset] == color) return null;
+
+            // change the pixel and note the change
+            var change = new PixelChange(offset, bmData[offset], color);
+            bmData[offset] = color;
+
+            // update the bitmap
+            var gfx = Graphics.FromImage(canvas);
+            gfx.FillRectangle(new SolidBrush(vgaPalette[color]),
+                              x * zoom, y * zoom,
+                              zoom - (showGrid.Checked ? 1 : 0),
+                              zoom - (showGrid.Checked ? 1 : 0));
+
+            return change;
+        }
+
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show(this, "VGAPainter by thegreatrazz\n" +
@@ -466,7 +509,9 @@ namespace VGAPainter
             // undo it
             foreach (var change in action.changes)
             {
-                bmData[change.Offset] = change.OldColor;
+                int x = change.Offset % bmWidth;
+                int y = change.Offset / bmWidth;
+                DrawPixel(x, y, change.OldColor);
             }
 
             // put it on the redo stack
@@ -484,7 +529,9 @@ namespace VGAPainter
             // undo it
             foreach (var change in action.changes)
             {
-                bmData[change.Offset] = change.NewColor;
+                int x = change.Offset % bmWidth;
+                int y = change.Offset / bmWidth;
+                DrawPixel(x, y, change.NewColor);
             }
 
             // put it on the redo stack
@@ -492,6 +539,19 @@ namespace VGAPainter
 
             Redraw();
             UpdateStackButtons();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (undoStack.Count > 0)
+            {
+                var result = MessageBox.Show("Would you like to save your work before quitting?", "Save and Quit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Cancel) e.Cancel = true;
+                if (result == DialogResult.Yes)
+                {
+                    SaveImage_Click(sender, e);
+                }
+            }
         }
 
         private void DrawTool_Select(object sender, EventArgs e)
