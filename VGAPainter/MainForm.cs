@@ -13,7 +13,7 @@ namespace VGAPainter
 {
     public enum DrawMode
     {
-        Pixel,
+        Draw,
         Fill,
         Picker
     }
@@ -30,7 +30,7 @@ namespace VGAPainter
         // canvas
         private Bitmap canvas;
         private int zoom = 5;
-        
+
         // mouse actions
         private bool mouseDraw = false;
         private DrawMode drawMode;
@@ -64,6 +64,7 @@ namespace VGAPainter
             }
 
             // a few UI things
+            this.statusMode.Text = drawMode.ToString();
             FullRedraw();
             UpdateStackButtons();
         }
@@ -214,7 +215,7 @@ namespace VGAPainter
         #endregion
 
         #region Bitmap rendering
-        
+
         /// <summary>
         /// Renders the bitmap for modern screens
         /// </summary>
@@ -310,11 +311,11 @@ namespace VGAPainter
         private void OpenImage_Click(object sender, EventArgs e)
         {
             // get the filename
-            var result = openTgr.ShowDialog(this);
+            var result = openVGA.ShowDialog(this);
             if (result != DialogResult.OK) return;
 
             // open the image
-            Stream file = new FileStream(openTgr.FileName, FileMode.Open);
+            Stream file = new FileStream(openVGA.FileName, FileMode.Open);
             BinaryReader br = new BinaryReader(file, Encoding.ASCII);
 
             // first check the header
@@ -336,13 +337,13 @@ namespace VGAPainter
             redoStack.Clear();
 
             // redraw the bitmap
-            Redraw();
+            FullRedraw();
         }
 
         private void SaveImage_Click(object sender, EventArgs e)
         {
             // get the filename
-            var result = saveTgr.ShowDialog(this);
+            var result = saveVGA.ShowDialog(this);
             if (result == DialogResult.Cancel && e is FormClosingEventArgs)
             {
                 (e as FormClosingEventArgs).Cancel = true;
@@ -350,7 +351,7 @@ namespace VGAPainter
             if (result != DialogResult.OK) return;
 
             // save the image
-            Stream file = new FileStream(saveTgr.FileName, FileMode.Create);
+            Stream file = new FileStream(saveVGA.FileName, FileMode.Create);
             BinaryWriter bw = new BinaryWriter(file, Encoding.ASCII);
             bw.Write(FileHeader.ToCharArray()); // write a header
             bw.Write((ushort)bmWidth);
@@ -361,7 +362,35 @@ namespace VGAPainter
 
         private void ImportImage_Click(object sender, EventArgs e)
         {
+            // open file to import
+            var result = openImport.ShowDialog();
+            if (result != DialogResult.OK) return;
 
+            // lock down the user interface
+            newToolStripMenuItem.Enabled = false;
+            openImage.Enabled = false;
+            saveImage.Enabled = false;
+            exportImage.Enabled = false;
+            importImage.Enabled = false;
+            showPalette.Enabled = false;
+            zoom100.Enabled = false;
+            zoom200.Enabled = false;
+            zoom500.Enabled = false;
+            zoomIn.Enabled = false;
+            zoomOut.Enabled = false;
+            showGrid.Enabled = false;
+
+            // show progress
+            importProgress.Visible = true;
+            importProgress.Value = 0;
+
+            // clear the stack
+            undoStack.Clear();
+            redoStack.Clear();
+            UpdateStackButtons();
+
+            // make the proletariat thread work
+            importer.RunWorkerAsync();
         }
 
         private void ExportImage_Click(object sender, EventArgs e)
@@ -380,6 +409,9 @@ namespace VGAPainter
 
         private void DoMouse(int mouseX, int mouseY)
         {
+            // 
+            if (importer.IsBusy) return;
+
             // pick out the color
             byte color = 0;
             if (colorSelector.SelectedItems.Count > 0)
@@ -401,7 +433,7 @@ namespace VGAPainter
 
             switch (drawMode)
             {
-                case DrawMode.Pixel:
+                case DrawMode.Draw:
                     var change = DrawPixel(mouseX, mouseY, color);
                     if (change != null) changes.Add(change);
                     redoStack.Clear();
@@ -434,7 +466,7 @@ namespace VGAPainter
 
             FullRedraw();
         }
-        
+
         private void CanvasBox_MouseDown(object sender, MouseEventArgs e)
         {
             mouseDraw = true;
@@ -449,6 +481,9 @@ namespace VGAPainter
 
         private void CanvasBox_MouseMove(object sender, MouseEventArgs e)
         {
+            if (!importer.IsBusy)
+                toolStripStatusLabel1.Text = String.Format("{0}, {1}", e.X / zoom, e.Y / zoom);
+
             if (!mouseDraw) return;
             DoMouse(e.X, e.Y);
         }
@@ -483,12 +518,7 @@ namespace VGAPainter
             return change;
         }
 
-        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show(this, "VGAPainter by thegreatrazz\n" +
-                "https://github.com/thegreatrazz/VGAPainter",
-                "About VGA Painter");
-        }
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e) => new AboutBox().ShowDialog();
 
         private void Exit_Click(object sender, EventArgs e)
         {
@@ -541,17 +571,117 @@ namespace VGAPainter
             UpdateStackButtons();
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        #region Million color to 256 color importer
+
+        // The importer is a BackgroundWorker which runs on a different thread.
+        // Start => DoWork => ReportProgress v WorkerCompleted
+        //            ^--------------------<===>-^
+
+        private void Importer_DoWork(object sender, DoWorkEventArgs e)
         {
-            if (undoStack.Count > 0)
-            {
-                var result = MessageBox.Show("Would you like to save your work before quitting?", "Save and Quit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (result == DialogResult.Cancel) e.Cancel = true;
-                if (result == DialogResult.Yes)
+            // TODO: Make a more efficient importer.
+            //       An idea I could try is ignore the CGA 16 color pallete and
+            //       use the HSL values and round them to thes we have in the pallete.
+
+            // open the image
+            var bm = new Bitmap(openImport.FileName);
+            var bmWidth = bm.Width;
+            var bmHeight = bm.Height;
+            var bmData = new byte[bmWidth * bmHeight];
+
+            // go through each pixel and find the closest candidate
+            int update = 0;
+            for (int y = 0; y < bmHeight; y++)
+                for (int x = 0; x < bmWidth; x++)
                 {
-                    SaveImage_Click(sender, e);
+                    Color thisColor = bm.GetPixel(x, y);
+                    if (update++ == 10)
+                    {
+                        importer.ReportProgress(100 * (y * bmWidth + x) / bmData.Length,
+                                                new ImporterStatus(y * bmWidth + x, bmData.Length));
+                        update = 0;
+                    }
+
+                    if (thisColor.A == 0) {
+                        bmData[y * bmWidth + x] = 0x00;
+                        continue;
+                    }
+
+                    int minIndex = -1, min = int.MaxValue;
+                    int[] overallDiff = new int[vgaPalette.Length];
+                    for (int i = 0; i < overallDiff.Length; i++)
+                    {
+                        Color vgaColor = vgaPalette[i];
+                        overallDiff[i] += Math.Abs(thisColor.R - vgaColor.R);
+                        overallDiff[i] += Math.Abs(thisColor.G - vgaColor.G);
+                        overallDiff[i] += Math.Abs(thisColor.B - vgaColor.B);
+
+                        if (overallDiff[i] < min)
+                        {
+                            min = overallDiff[i];
+                            minIndex = i;
+                        }
+                    }
+
+                    // set this pixel to the color
+                    bmData[y * bmWidth + x] = (byte)minIndex;
                 }
-            }
+
+            // render a bitmap to apply when the worker finishes
+            importer.ReportProgress(100, new ImporterStatus(true, bmData.Length));
+
+            // save the bitmap data
+            this.bmWidth = bmWidth;
+            this.bmHeight = bmHeight;
+            this.bmData = bmData;
+            this.canvas = RenderBitmap(this.zoom, this.showGrid.Checked);
+
+            e.Result = true;
+        }
+
+        private void Importer_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // update UI on importer progress
+            importProgress.Value = e.ProgressPercentage;
+            toolStripStatusLabel1.Text = e.UserState.ToString();
+        }
+
+        private void Importer_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // hide the import progress bar
+            importProgress.Visible = false;
+            toolStripStatusLabel1.Text = "";
+
+            // release the user interface
+            newToolStripMenuItem.Enabled = true;
+            openImage.Enabled = true;
+            saveImage.Enabled = true;
+            exportImage.Enabled = true;
+            importImage.Enabled = true;
+            showPalette.Enabled = true;
+            zoom100.Enabled = true;
+            zoom200.Enabled = true;
+            zoom500.Enabled = true;
+            zoomIn.Enabled = true;
+            zoomOut.Enabled = true;
+            showGrid.Enabled = true;
+
+            // redraw the UI
+            Redraw();
+        }
+
+        #endregion
+
+        #region Misc. UI Stuff
+
+        private void HelpToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/thegreatrazz/VGAPainter/wiki");
+        }
+
+        private void ReportAnissueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/thegreatrazz/VGAPainter/issues");
         }
 
         private void DrawTool_Select(object sender, EventArgs e)
@@ -564,9 +694,56 @@ namespace VGAPainter
 
             if (!(sender is ToolStripMenuItem)) return;
             ToolStripMenuItem toolSelector = (ToolStripMenuItem)sender;
-            drawMode = (DrawMode)toolSelector.Tag;
+            drawMode = (DrawMode)Enum.Parse(drawMode.GetType(), toolSelector.Tag as string);
             toolSelector.Checked = true;
+            statusMode.Text = drawMode.ToString();
         }
 
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // prevent the program from closing if the image is being edited
+
+            if (undoStack.Count > 0)
+            {
+                var result = MessageBox.Show("Would you like to save your work before quitting?", "Save and Quit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Cancel) e.Cancel = true;
+                if (result == DialogResult.Yes)
+                {
+                    SaveImage_Click(sender, e);
+                }
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Class for storing the status of the importer
+    /// </summary>
+    class ImporterStatus
+    {
+        public int Progress { get; private set; }
+        public int Total { get; private set; }
+        public bool BitmapRender { get; private set; }
+
+        public ImporterStatus(bool bitmap, int total)
+        {
+            BitmapRender = bitmap;
+            Total = total;
+            Progress = total;
+        }
+
+        public ImporterStatus(int progress, int total)
+        {
+            BitmapRender = false;
+            Progress = progress;
+            Total = total;
+        }
+
+        public override string ToString()
+        {
+            if (BitmapRender) return "Rendering bitmap...";
+            return String.Format("{0} / {1} pixels processed", Progress, Total);
+        }
     }
 }

@@ -45,8 +45,6 @@
             this.redoAction = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.drawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.showPalette = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,18 +61,29 @@
             this.showGrid = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveTgr = new System.Windows.Forms.SaveFileDialog();
+            this.saveVGA = new System.Windows.Forms.SaveFileDialog();
             this.saveExport = new System.Windows.Forms.SaveFileDialog();
             this.colorSelector = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.canvasBox = new System.Windows.Forms.PictureBox();
-            this.openTgr = new System.Windows.Forms.OpenFileDialog();
-            this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
+            this.openVGA = new System.Windows.Forms.OpenFileDialog();
+            this.openImport = new System.Windows.Forms.OpenFileDialog();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.statusBar = new System.Windows.Forms.StatusStrip();
+            this.statusMode = new System.Windows.Forms.ToolStripStatusLabel();
+            this.importProgress = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.importer = new System.ComponentModel.BackgroundWorker();
+            this.reportAnissueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.helpToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.pixerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).BeginInit();
             this.panel1.SuspendLayout();
+            this.statusBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -144,13 +153,14 @@
             // 
             this.importImage.Name = "importImage";
             this.importImage.Size = new System.Drawing.Size(155, 22);
-            this.importImage.Text = "&Import";
+            this.importImage.Text = "&Import...";
+            this.importImage.Click += new System.EventHandler(this.ImportImage_Click);
             // 
             // exportImage
             // 
             this.exportImage.Name = "exportImage";
             this.exportImage.Size = new System.Drawing.Size(155, 22);
-            this.exportImage.Text = "&Export";
+            this.exportImage.Text = "&Export...";
             this.exportImage.Click += new System.EventHandler(this.ExportImage_Click);
             // 
             // toolStripSeparator2
@@ -210,27 +220,9 @@
             this.drawToolStripMenuItem.Name = "drawToolStripMenuItem";
             this.drawToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
             this.drawToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.drawToolStripMenuItem.Tag = VGAPainter.DrawMode.Pixel;
+            this.drawToolStripMenuItem.Tag = "Draw";
             this.drawToolStripMenuItem.Text = "&Draw";
             this.drawToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // fillToolStripMenuItem
-            // 
-            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
-            this.fillToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F6;
-            this.fillToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
-            this.fillToolStripMenuItem.Text = "&Fill";
-            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
-            // 
-            // pixerToolStripMenuItem
-            // 
-            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
-            this.pixerToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
-            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
-            this.pixerToolStripMenuItem.Tag = VGAPainter.DrawMode.Picker;
-            this.pixerToolStripMenuItem.Text = "&Picker";
-            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
             // 
             // toolStripSeparator3
             // 
@@ -346,6 +338,9 @@
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.helpToolStripMenuItem1,
+            this.reportAnissueToolStripMenuItem,
+            this.toolStripSeparator9,
             this.aboutToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
@@ -354,15 +349,15 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.aboutToolStripMenuItem.Text = "&About...";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItem_Click);
             // 
-            // saveTgr
+            // saveVGA
             // 
-            this.saveTgr.DefaultExt = "vad";
-            this.saveTgr.Filter = "VGA Artwork Data|*.vad";
-            this.saveTgr.Title = "Save VGA artwork";
+            this.saveVGA.DefaultExt = "vad";
+            this.saveVGA.Filter = "VGA Artwork Data|*.vad";
+            this.saveVGA.Title = "Save VGA artwork";
             // 
             // saveExport
             // 
@@ -410,15 +405,16 @@
             this.canvasBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.CanvasBox_MouseMove);
             this.canvasBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.CanvasBox_MouseUp);
             // 
-            // openTgr
+            // openVGA
             // 
-            this.openTgr.DefaultExt = "vad";
-            this.openTgr.FileName = "*.vad";
-            this.openTgr.Filter = "VGA Artwork Data|*.vad";
+            this.openVGA.DefaultExt = "vad";
+            this.openVGA.FileName = "*.vad";
+            this.openVGA.Filter = "VGA Artwork Data|*.vad";
             // 
-            // openFileDialog2
+            // openImport
             // 
-            this.openFileDialog2.FileName = "openFileDialog2";
+            this.openImport.Filter = "Any files|*.*|PNG (Portable Network Graphics)|*.png|BMP (Bitmap)|*.bmp|GIF (Graph" +
+    "ics Interchange Format)|*.gif";
             // 
             // panel1
             // 
@@ -428,8 +424,82 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(144, 24);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(656, 426);
+            this.panel1.Size = new System.Drawing.Size(656, 404);
             this.panel1.TabIndex = 3;
+            // 
+            // statusBar
+            // 
+            this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusMode,
+            this.importProgress,
+            this.toolStripStatusLabel1});
+            this.statusBar.Location = new System.Drawing.Point(144, 428);
+            this.statusBar.Name = "statusBar";
+            this.statusBar.Size = new System.Drawing.Size(656, 22);
+            this.statusBar.TabIndex = 4;
+            this.statusBar.Text = "statusStrip1";
+            // 
+            // statusMode
+            // 
+            this.statusMode.Name = "statusMode";
+            this.statusMode.Size = new System.Drawing.Size(0, 17);
+            // 
+            // importProgress
+            // 
+            this.importProgress.Name = "importProgress";
+            this.importProgress.Size = new System.Drawing.Size(100, 16);
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            // 
+            // importer
+            // 
+            this.importer.WorkerReportsProgress = true;
+            this.importer.WorkerSupportsCancellation = true;
+            this.importer.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Importer_DoWork);
+            this.importer.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.Importer_ProgressChanged);
+            this.importer.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.Importer_RunWorkerCompleted);
+            // 
+            // reportAnissueToolStripMenuItem
+            // 
+            this.reportAnissueToolStripMenuItem.Name = "reportAnissueToolStripMenuItem";
+            this.reportAnissueToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.reportAnissueToolStripMenuItem.Text = "Report an &issue...";
+            this.reportAnissueToolStripMenuItem.Click += new System.EventHandler(this.ReportAnissueToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(160, 6);
+            // 
+            // helpToolStripMenuItem1
+            // 
+            this.helpToolStripMenuItem1.Name = "helpToolStripMenuItem1";
+            this.helpToolStripMenuItem1.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.helpToolStripMenuItem1.Size = new System.Drawing.Size(163, 22);
+            this.helpToolStripMenuItem1.Text = "&Help";
+            this.helpToolStripMenuItem1.Click += new System.EventHandler(this.HelpToolStripMenuItem1_Click);
+            // 
+            // pixerToolStripMenuItem
+            // 
+            this.pixerToolStripMenuItem.Name = "pixerToolStripMenuItem";
+            this.pixerToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
+            this.pixerToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.pixerToolStripMenuItem.Tag = "Picker";
+            this.pixerToolStripMenuItem.Text = "&Picker";
+            this.pixerToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
+            // 
+            // fillToolStripMenuItem
+            // 
+            this.fillToolStripMenuItem.Enabled = false;
+            this.fillToolStripMenuItem.Name = "fillToolStripMenuItem";
+            this.fillToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F6;
+            this.fillToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.fillToolStripMenuItem.Tag = VGAPainter.DrawMode.Fill;
+            this.fillToolStripMenuItem.Text = "&Fill";
+            this.fillToolStripMenuItem.Click += new System.EventHandler(this.DrawTool_Select);
             // 
             // MainForm
             // 
@@ -437,6 +507,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.statusBar);
             this.Controls.Add(this.colorSelector);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -449,6 +520,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.statusBar.ResumeLayout(false);
+            this.statusBar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -481,15 +554,15 @@
         private System.Windows.Forms.ToolStripMenuItem zoom500;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.SaveFileDialog saveTgr;
+        private System.Windows.Forms.SaveFileDialog saveVGA;
         private System.Windows.Forms.SaveFileDialog saveExport;
         private System.Windows.Forms.ListView colorSelector;
         private System.Windows.Forms.PictureBox canvasBox;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ToolStripMenuItem pixerToolStripMenuItem;
-        private System.Windows.Forms.OpenFileDialog openTgr;
-        private System.Windows.Forms.OpenFileDialog openFileDialog2;
+        private System.Windows.Forms.OpenFileDialog openVGA;
+        private System.Windows.Forms.OpenFileDialog openImport;
         private System.Windows.Forms.ToolStripMenuItem loadPaletteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
@@ -499,6 +572,14 @@
         private System.Windows.Forms.ToolStripMenuItem redoAction;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.StatusStrip statusBar;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripProgressBar importProgress;
+        private System.ComponentModel.BackgroundWorker importer;
+        private System.Windows.Forms.ToolStripStatusLabel statusMode;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem reportAnissueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
     }
 }
 
