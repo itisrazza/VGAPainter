@@ -44,7 +44,7 @@ namespace VGAPainter
             palette = Palette.VGA;
             InitializeComponent();
 
-            UpdateColorPicker();
+            ColorSelector_Update();
 
             // a few UI things
             this.statusMode.Text = drawMode.ToString();
@@ -52,7 +52,7 @@ namespace VGAPainter
             UpdateStackButtons();
         }
 
-        void UpdateColorPicker()
+        void ColorSelector_Update()
         {
             // 
             while (colorSelector.Items.Count > 0)
@@ -80,9 +80,6 @@ namespace VGAPainter
             FullRedraw();
         }
 
-        #region VGA Palette Generation
-
-
         private void ShowPalette_Click(object sender, EventArgs e)
         {
             bmWidth = 16;
@@ -100,8 +97,6 @@ namespace VGAPainter
 
             FullRedraw();
         }
-
-        #endregion
 
         #region Bitmap rendering
 
@@ -327,6 +322,11 @@ namespace VGAPainter
                     if (change != null) changes.Add(change);
                     redoStack.Clear();
                     break;
+                case DrawMode.Fill:
+                    var changeSet = FloodFill(mouseX, mouseY, color);
+                    if (changeSet != null) changes.UnionWith(changeSet);
+                    redoStack.Clear();
+                    break;
                 case DrawMode.Picker:
                     colorSelector.Items[bmData[offset]].Selected = true;
                     break;
@@ -405,6 +405,57 @@ namespace VGAPainter
                               zoom - (showGrid.Checked ? 1 : 0));
 
             return change;
+        }
+
+        private ISet<PixelChange> FloodFill(int x, int y, byte color)
+        {
+            // precalc offset and check boundary
+            int offset = y * bmWidth + x;
+            if (offset < 0 || offset >= bmData.Length) return null;
+
+            var changes = new HashSet<PixelChange>();
+            var visitedPixels = new HashSet<int>();
+
+            var toVisit = new Queue<int>();
+            toVisit.Enqueue(y * bmWidth + x);
+
+            var gfx = Graphics.FromImage(canvas);
+
+            while (toVisit.Count > 0)
+            {
+                var pixelOffset = toVisit.Dequeue();
+                var pixelColor = bmData[pixelOffset];
+                if (visitedPixels.Contains(pixelOffset)) continue;
+
+                changes.Add(new PixelChange(pixelOffset, pixelColor, color));
+                bmData[pixelOffset] = color;
+                gfx.FillRectangle(new SolidBrush(palette[color]),
+                                  (pixelOffset % bmWidth) * zoom, 
+                                  (pixelOffset / bmWidth) * zoom,
+                                  zoom - (showGrid.Checked ? 1 : 0),
+                                  zoom - (showGrid.Checked ? 1 : 0));
+
+                visitedPixels.Add(pixelOffset);
+
+                int[] diff = new int[] { -bmWidth, bmWidth, -1, 1 };
+                foreach (int offsetDiff in diff)
+                {
+                    var nextOffset = pixelOffset + offsetDiff;
+                    try
+                    {
+                        if (pixelColor != bmData[nextOffset]) continue;
+                        if (visitedPixels.Contains(nextOffset)) continue;
+
+                        toVisit.Enqueue(nextOffset);
+                    }
+                    catch
+                    {
+                        ;
+                    }
+                }
+            }
+
+            return changes;
         }
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e) => new AboutBox().ShowDialog();
@@ -602,19 +653,19 @@ namespace VGAPainter
             }
 
             palette[color] = colorDialog1.Color;
-            UpdateColorPicker();
+            ColorSelector_Update();
         }
 
         private void GrayscaleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             palette = Palette.Grayscale;
-            UpdateColorPicker();
+            ColorSelector_Update();
         }
 
         private void VGAMode13hToolStripMenuItem_Click(object sender, EventArgs e)
         {
             palette = Palette.VGA;
-            UpdateColorPicker();
+            ColorSelector_Update();
         }
 
         private void ImportToolStripMenuItem_Click(object sender, EventArgs e)
@@ -631,7 +682,7 @@ namespace VGAPainter
 
             // import the palette
             palette = Palette.Load(importDialog.FileName);
-            UpdateColorPicker();
+            ColorSelector_Update();
         }
 
         private void ExportToolStripMenuItem_Click(object sender, EventArgs e)
