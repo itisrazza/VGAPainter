@@ -39,6 +39,28 @@ namespace VGAPainter
         private Stack<HistoryEvent> undoStack = new Stack<HistoryEvent>();
         private Stack<HistoryEvent> redoStack = new Stack<HistoryEvent>();
 
+        // opened files' filename and status
+        string openFileName;
+        bool openFileImported = false;
+        bool openFileDirty = false;
+
+        // when the user MUST save as...
+        bool mustSaveAs = false;    // (this is used for requesting save as)
+        bool MustSaveAs
+        {
+            get
+            {
+                bool saveAs = OpenFileName == null | OpenFileImported | mustSaveAs;
+                if (mustSaveAs) mustSaveAs = false;
+                return saveAs;
+            }
+            set => mustSaveAs = value;
+        }
+
+        public string OpenFileName { get => this.openFileName; private set { this.openFileName = value; windowTitle(); } }
+        public bool OpenFileImported { get => this.openFileImported; private set { this.openFileImported = value; windowTitle(); } }
+        public bool OpenFileDirty { get => this.openFileDirty; private set { this.openFileDirty = value; windowTitle(); } }
+
         public MainForm()
         {
             palette = Palette.VGA;
@@ -50,6 +72,9 @@ namespace VGAPainter
             this.statusMode.Text = drawMode.ToString();
             FullRedraw();
             UpdateStackButtons();
+
+            // set the filename (and titlebar)
+            this.OpenFileName = null;
         }
 
         void ColorSelector_Update()
@@ -222,17 +247,27 @@ namespace VGAPainter
 
             // redraw the bitmap
             FullRedraw();
+
+            // save filename
+            this.OpenFileName = openVGA.FileName;
+            this.OpenFileDirty = false;
+            this.OpenFileImported = false;
         }
 
         private void SaveImage_Click(object sender, EventArgs e)
         {
-            // get the filename
-            var result = saveVGA.ShowDialog(this);
-            if (result == DialogResult.Cancel && e is FormClosingEventArgs)
+            // get the filename (if we don't have one)
+            if (MustSaveAs) { 
+                var result = saveVGA.ShowDialog(this);
+                if (result == DialogResult.Cancel && e is FormClosingEventArgs)
+                {
+                    (e as FormClosingEventArgs).Cancel = true;
+                }
+                if (result != DialogResult.OK) return;
+            } else
             {
-                (e as FormClosingEventArgs).Cancel = true;
+                saveVGA.FileName = OpenFileName;
             }
-            if (result != DialogResult.OK) return;
 
             // save the image
             Stream file = new FileStream(saveVGA.FileName, FileMode.Create);
@@ -242,6 +277,11 @@ namespace VGAPainter
             bw.Write((ushort)bmHeight);
             bw.Write(bmData);
             bw.Close();
+
+            // save filename
+            this.OpenFileName = saveVGA.FileName;
+            this.OpenFileDirty = false;
+            this.OpenFileImported = false;
         }
 
         private void ImportImage_Click(object sender, EventArgs e)
@@ -250,7 +290,7 @@ namespace VGAPainter
             var result = openImport.ShowDialog();
             if (result != DialogResult.OK) return;
 
-            // lock down the user interface
+            // lock down the user interface (there HAS to be better ways of doing this)
             newToolStripMenuItem.Enabled = false;
             openImage.Enabled = false;
             saveImage.Enabled = false;
@@ -275,6 +315,11 @@ namespace VGAPainter
 
             // make the proletariat thread work
             importer.RunWorkerAsync();
+
+            // save image info
+            this.OpenFileName = openImport.FileName;
+            this.OpenFileDirty = false;
+            this.OpenFileImported = true;
         }
 
         private void ExportImage_Click(object sender, EventArgs e)
@@ -335,8 +380,10 @@ namespace VGAPainter
             }
 
             // undo/redo stack things
-            if (changes.Count > 0)
+            if (changes.Count > 0) { 
                 undoStack.Push(new HistoryEvent(changes));
+                OpenFileDirty = true;
+            }
             UpdateStackButtons();
 
             // trigger canvasBox redraw
@@ -354,6 +401,10 @@ namespace VGAPainter
             bmData = new byte[bmWidth * bmHeight];
 
             FullRedraw();
+
+            OpenFileName = null;
+            OpenFileDirty = false;
+            OpenFileImported = false;
         }
 
         private void CanvasBox_MouseDown(object sender, MouseEventArgs e)
@@ -716,6 +767,29 @@ namespace VGAPainter
 
             // cancel importing
             importer.CancelAsync();
+        }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // shim
+            MustSaveAs = true;
+            SaveImage_Click(sender, e);
+        }
+
+        private void windowTitle()
+        {
+            // cobbles together then sets the window title
+            string suffix = " - VGAPainter";
+            string filename = "Untitled";
+            string dirty = OpenFileDirty ? "*" : "";
+            string imported = OpenFileImported ? " (imported)" : "";
+            if (this.OpenFileName != null)
+            {
+                filename = Path.GetFileName(this.OpenFileName);
+            }
+
+            string title = dirty + filename + imported + suffix;
+            this.Text = title;
         }
 
         #endregion
