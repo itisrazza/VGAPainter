@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using VGAPainter.Data;
 
-namespace VGAPainter
+namespace VGAPainter.Forms
 {
     public enum DrawMode
     {
@@ -393,7 +393,7 @@ namespace VGAPainter
 
         private void NewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NewArtwork newDialog = new NewArtwork();
+            var newDialog = new Dialogs.NewArtwork();
             var result = newDialog.ShowDialog();
             if (result != DialogResult.OK) return;
 
@@ -511,7 +511,7 @@ namespace VGAPainter
             return changes;
         }
 
-        private void AboutToolStripMenuItem_Click(object sender, EventArgs e) => new AboutBox().ShowDialog();
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e) => new Dialogs.AboutBox().ShowDialog();
 
         private void Exit_Click(object sender, EventArgs e)
         {

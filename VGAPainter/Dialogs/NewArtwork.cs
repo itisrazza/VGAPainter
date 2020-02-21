@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VGAPainter
+namespace VGAPainter.Dialogs
 {
     public partial class NewArtwork : Form
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VGAPainter
+namespace VGAPainter.Data
 {
     class HistoryEvent
     {

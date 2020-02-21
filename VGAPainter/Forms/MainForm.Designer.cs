@@ -1,4 +1,4 @@
-﻿namespace VGAPainter
+﻿namespace VGAPainter.Forms
 {
     partial class MainForm
     {

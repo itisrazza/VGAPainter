@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace VGAPainter
+namespace VGAPainter.Dialogs
 {
     partial class AboutBox : Form
     {
