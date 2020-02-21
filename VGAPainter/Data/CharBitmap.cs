@@ -8,7 +8,7 @@ namespace VGAPainter.Data
     /// <summary>
     /// A character-based (256 colour palette) bitmap image
     /// </summary>
-    class CharBitmap
+    public class CharBitmap
     {
         /// <summary>
         /// Raw bitmap data array

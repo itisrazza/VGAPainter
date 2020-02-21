@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using VGAPainter.Data;
+using VGAPainter.Importers;
 
 namespace VGAPainter.Forms
 {
@@ -58,6 +59,9 @@ namespace VGAPainter.Forms
         public string OpenFileName { get => this.openFileName; private set { this.openFileName = value; windowTitle(); } }
         public bool OpenFileImported { get => this.openFileImported; private set { this.openFileImported = value; windowTitle(); } }
         public bool OpenFileDirty { get => this.openFileDirty; private set { this.openFileDirty = value; windowTitle(); } }
+
+        // temporary import
+        BackgroundWorker importer = new BackgroundWorker();
 
         public MainForm()
         {
@@ -175,6 +179,9 @@ namespace VGAPainter.Forms
             canvasBox.Image = canvas;
             canvasBox.Refresh();
             canvasBox.Update();
+
+            // rip performance
+            GC.Collect();
         }
 
         private void RedrawUITrigger(object sender, EventArgs e)
@@ -283,44 +290,6 @@ namespace VGAPainter.Forms
             this.OpenFileName = saveVGA.FileName;
             this.OpenFileDirty = false;
             this.OpenFileImported = false;
-        }
-
-        private void ImportImage_Click(object sender, EventArgs e)
-        {
-            // open file to import
-            var result = openImport.ShowDialog();
-            if (result != DialogResult.OK) return;
-
-            // lock down the user interface (there HAS to be better ways of doing this)
-            newToolStripMenuItem.Enabled = false;
-            openImage.Enabled = false;
-            saveImage.Enabled = false;
-            exportImage.Enabled = false;
-            importImage.Enabled = false;
-            showPalette.Enabled = false;
-            zoom100.Enabled = false;
-            zoom200.Enabled = false;
-            zoom500.Enabled = false;
-            zoomIn.Enabled = false;
-            zoomOut.Enabled = false;
-            showGrid.Enabled = false;
-
-            // show progress
-            importProgress.Visible = true;
-            importProgress.Value = 0;
-
-            // clear the stack
-            undoStack.Clear();
-            redoStack.Clear();
-            UpdateStackButtons();
-
-            // make the proletariat thread work
-            importer.RunWorkerAsync();
-
-            // save image info
-            this.OpenFileName = openImport.FileName;
-            this.OpenFileDirty = false;
-            this.OpenFileImported = true;
         }
 
         private void ExportImage_Click(object sender, EventArgs e)
@@ -755,7 +724,7 @@ namespace VGAPainter.Forms
         {
             // prevent the program from closing if the image is being edited
 
-            if (undoStack.Count > 0)
+            if (undoStack.Count > 0 || OpenFileDirty || OpenFileImported)
             {
                 var result = MessageBox.Show("Would you like to save your work before quitting?", "Save and Quit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.Cancel) e.Cancel = true;
@@ -764,9 +733,6 @@ namespace VGAPainter.Forms
                     SaveImage_Click(sender, e);
                 }
             }
-
-            // cancel importing
-            importer.CancelAsync();
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -793,6 +759,106 @@ namespace VGAPainter.Forms
         }
 
         #endregion
+
+        private void vGAOptimisedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // open file to import
+            var result = openImport.ShowDialog();
+            if (result != DialogResult.OK) return;
+
+            // test-load the image to check for format
+            Bitmap bitmap;
+            try
+            {
+                bitmap = new Bitmap(openImport.FileName);
+            }
+            catch (ArgumentException ex)
+            {
+                // what the blin?
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+            var imported = ImporterOptimised.Import(bitmap);
+
+            // stop here if import failed / cancelled
+            if (imported == null)
+            {
+                return;
+            }
+
+            // set palette to VGA
+            palette = Palette.VGA;
+
+            // clear the stack
+            undoStack.Clear();
+            redoStack.Clear();
+            UpdateStackButtons();
+
+            // save image info
+            this.OpenFileName = openImport.FileName;
+            this.OpenFileDirty = false;
+            this.OpenFileImported = true;
+
+            // redraw
+            this.bitmap = imported;
+            FullRedraw();
+        }
+
+        private void defaultImporterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // open file to import
+            var result = openImport.ShowDialog();
+            if (result != DialogResult.OK) return;
+
+            // test-load the image to check for format
+            Bitmap bitmap;
+            try
+            {
+                bitmap = new Bitmap(openImport.FileName);
+            }
+            catch (ArgumentException ex)
+            {
+                // what the blin?
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+            ImporterGenericArgs args = new ImporterGenericArgs()
+            {
+                DitherLevel = 0,
+                Palette = this.palette
+            };
+            var imported = ImporterGeneric.Import(bitmap, args);
+
+            // stop here if import failed / cancelled
+            if (imported == null)
+            {
+                return;
+            }
+
+            // clear the stack
+            undoStack.Clear();
+            redoStack.Clear();
+            UpdateStackButtons();
+
+            // save image info
+            this.OpenFileName = openImport.FileName;
+            this.OpenFileDirty = false;
+            this.OpenFileImported = true;
+
+            // redraw
+            this.bitmap = imported;
+            FullRedraw();
+        }
     }
 
     /// <summary>

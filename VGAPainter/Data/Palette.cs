@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -86,6 +87,12 @@ namespace VGAPainter.Data
 
         #region Predefined palettes
 
+        public static Dictionary<String, Palette> KnownPalettes = new Dictionary<string, Palette>()
+        {
+            { "VGA", Palette.VGA },
+            { "Grayscale", Palette.Grayscale }
+        };
+
         public static Palette VGA
         {
             get
@@ -167,7 +174,7 @@ namespace VGAPainter.Data
         /// <summary>
         /// Converts an HSL color into a .NET Color object
         /// </summary>
-        private static Color FromHsv(double h, double s, double v)
+        public static Color FromHsv(double h, double s, double v)
         {
             h %= 360;    // limit to 360 degrees
 
@@ -221,6 +228,40 @@ namespace VGAPainter.Data
             b = Clip(b + m);
 
             return Color.FromArgb((int)(r * 255), (int)(g * 255), (int)((b * 255)));
+        }
+
+        public static void ToHsv(Color color, out double h, out double s, out double v)
+        {
+            double r = color.R / 255.0;
+            double g = color.G / 255.0;
+            double b = color.B / 255.0;
+
+            double cMax = Math.Max(r, Math.Max(g, b));
+            double cMin = Math.Min(r, Math.Min(g, b));
+            double diff = cMax - cMin;
+
+            h = 0;
+            s = cMax == 0 ? 0 : diff / cMax;
+            v = cMax;
+
+            if (diff == 0) h = 0;
+            else if (cMax == r)
+            {
+                h = 60 * (((g - b) / diff) % 6);
+                if (h < 0) h = 360 + h;
+            }
+            else if (cMax == g)
+            {
+                h = 60 * (((b - r) / diff) + 2);
+            }
+            else if (cMax == b)
+            {
+                h = 60 * (((r - g) / diff) + 4);
+            }
+
+            Debug.Assert(h >= 0 && h <= 360, "Hue must be between 0 and 360.", "Hue is " + h.ToString());
+            Debug.Assert(s >= 0 && s <= 1, "Saturation must be between 0 and 1.", "Saturation is " + s.ToString());
+            Debug.Assert(v >= 0 && v <= 1, "Brightness must be between 0 and 1.", "Brightness is " + v.ToString());
         }
 
         /// <summary>

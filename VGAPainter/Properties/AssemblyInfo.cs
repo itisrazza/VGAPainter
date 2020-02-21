@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("thegreatrazz")]
 [assembly: AssemblyProduct("VGAPainter")]
-[assembly: AssemblyCopyright("© 2019 Raresh Nistor")]
+[assembly: AssemblyCopyright("© 2019-2020 Raresh Nistor")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

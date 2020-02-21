@@ -35,8 +35,11 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.openImage = new System.Windows.Forms.ToolStripMenuItem();
             this.saveImage = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.importImage = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultImporterToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.vGAOptimisedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportImage = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exit = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,9 +91,7 @@
             this.statusMode = new System.Windows.Forms.ToolStripStatusLabel();
             this.importProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.importer = new System.ComponentModel.BackgroundWorker();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.canvasBox)).BeginInit();
             this.panel1.SuspendLayout();
@@ -157,6 +158,15 @@
             this.saveImage.Text = "&Save";
             this.saveImage.Click += new System.EventHandler(this.SaveImage_Click);
             // 
+            // saveAsToolStripMenuItem
+            // 
+            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+            this.saveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.saveAsToolStripMenuItem.Text = "Save &As...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
+            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -164,10 +174,26 @@
             // 
             // importImage
             // 
+            this.importImage.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.defaultImporterToolStripMenuItem,
+            this.vGAOptimisedToolStripMenuItem});
             this.importImage.Name = "importImage";
             this.importImage.Size = new System.Drawing.Size(195, 22);
-            this.importImage.Text = "&Import...";
-            this.importImage.Click += new System.EventHandler(this.ImportImage_Click);
+            this.importImage.Text = "&Import";
+            // 
+            // defaultImporterToolStripMenuItem
+            // 
+            this.defaultImporterToolStripMenuItem.Name = "defaultImporterToolStripMenuItem";
+            this.defaultImporterToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
+            this.defaultImporterToolStripMenuItem.Text = "&Generic Import (Slower)";
+            this.defaultImporterToolStripMenuItem.Click += new System.EventHandler(this.defaultImporterToolStripMenuItem_Click);
+            // 
+            // vGAOptimisedToolStripMenuItem
+            // 
+            this.vGAOptimisedToolStripMenuItem.Name = "vGAOptimisedToolStripMenuItem";
+            this.vGAOptimisedToolStripMenuItem.Size = new System.Drawing.Size(246, 22);
+            this.vGAOptimisedToolStripMenuItem.Text = "&VGA Import (Faster, VGA Palette)";
+            this.vGAOptimisedToolStripMenuItem.Click += new System.EventHandler(this.vGAOptimisedToolStripMenuItem_Click);
             // 
             // exportImage
             // 
@@ -572,23 +598,6 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
-            // importer
-            // 
-            this.importer.WorkerReportsProgress = true;
-            this.importer.WorkerSupportsCancellation = true;
-            this.importer.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Importer_DoWork);
-            this.importer.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.Importer_ProgressChanged);
-            this.importer.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.Importer_RunWorkerCompleted);
-            // 
-            // saveAsToolStripMenuItem
-            // 
-            this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
-            | System.Windows.Forms.Keys.S)));
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
-            this.saveAsToolStripMenuItem.Text = "Save &As...";
-            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -663,7 +672,6 @@
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripProgressBar importProgress;
-        private System.ComponentModel.BackgroundWorker importer;
         private System.Windows.Forms.ToolStripStatusLabel statusMode;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem reportAnissueToolStripMenuItem;
@@ -679,6 +687,8 @@
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem defaultImporterToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem vGAOptimisedToolStripMenuItem;
     }
 }
 

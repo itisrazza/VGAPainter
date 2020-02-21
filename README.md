@@ -17,8 +17,10 @@ It's not as feature complete as I'd like, but below is a wishlist of quality fea
 * Import and export to and from PNG, JPEG and other common image formats;
 * A simple to understand file format for loading images onto older systems;
 * Limited, but customisable 256-color palette;
+* Generic any-palette importer and a faster optimised HSV calculator for the VGA palette
 
 ## Wishlist
 
 * Refactoring (de-spaghetti-ing the code)
+* Image importer plugin support
 * More tools (flood fill is in, but rectangles and lines are not)
