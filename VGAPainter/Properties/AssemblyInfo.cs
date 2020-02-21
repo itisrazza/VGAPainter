@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("VGAPainter")]
-[assembly: AssemblyDescription("🎨💾 A simple paint program targeting VGA 256-color mode (INT 10h).")]
+[assembly: AssemblyDescription("A simple paint program targeting MCGA/VGA 256-color mode (Mode 13h).")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("thegreatrazz")]
 [assembly: AssemblyProduct("VGAPainter")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.5.0")]
-[assembly: AssemblyFileVersion("0.0.5.0")]
+[assembly: AssemblyVersion("0.0.6.0")]
+[assembly: AssemblyFileVersion("0.0.6.0")]
