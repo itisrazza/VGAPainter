@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using VGAPainter.Data;
 
 namespace VGAPainter
 {
@@ -22,10 +23,7 @@ namespace VGAPainter
     {
         // VGA palette
         private Palette palette;
-
-        // VGA bitmap
-        private int bmWidth = 16, bmHeight = 16;
-        private byte[] bmData = new byte[256];
+        private CharBitmap bitmap = new CharBitmap(16, 16);
 
         // canvas
         private Bitmap canvas;
@@ -107,13 +105,13 @@ namespace VGAPainter
 
         private void ShowPalette_Click(object sender, EventArgs e)
         {
-            bmWidth = 16;
-            bmHeight = Palette.Length / bmWidth;
-            bmData = new byte[bmWidth * bmHeight];
+            // candidate for removal
+
+            bitmap = new CharBitmap(16, Palette.Length / 16);
 
             for (int i = 0; i <= byte.MaxValue; i++)
             {
-                bmData[i] = (byte)i;
+                bitmap.Data[i] = (byte)i;
             }
 
             // clear the history stacks
@@ -133,13 +131,13 @@ namespace VGAPainter
             if (scale <= 0) return null;
 
             // create .NET bitmap
-            Bitmap bm = new Bitmap(bmWidth * scale, bmHeight * scale);
+            Bitmap bm = new Bitmap(bitmap.Width * scale, bitmap.Height * scale);
 
             // copy the pixels
             for (int y = 0; y < bm.Height; y += scale)
                 for (int x = 0; x < bm.Width; x += scale)
                 {
-                    Color pixel = palette[bmData[y / scale * bmWidth + (x / scale)]];
+                    Color pixel = palette[bitmap.Data[y / scale * bitmap.Width + (x / scale)]];
                     for (int py = 0; py < scale; py++)
                         for (int px = 0; px < scale; px++)
                             bm.SetPixel(x + px, y + py, pixel);
@@ -232,11 +230,14 @@ namespace VGAPainter
             if (new string(header) != FileHeader) throw new Exception("Invalid format");
 
             // read the width and height
-            bmWidth = br.ReadUInt16();
-            bmHeight = br.ReadUInt16();
+            var bmWidth = br.ReadUInt16();
+            var bmHeight = br.ReadUInt16();
 
             // load in the rest of the data
-            bmData = br.ReadBytes(bmWidth * bmHeight);
+            var bmData = br.ReadBytes(bmWidth * bmHeight);
+
+            // create bitmap object
+            bitmap = new CharBitmap(bmData, bmWidth);
 
             // done
             br.Close();
@@ -273,9 +274,9 @@ namespace VGAPainter
             Stream file = new FileStream(saveVGA.FileName, FileMode.Create);
             BinaryWriter bw = new BinaryWriter(file, Encoding.ASCII);
             bw.Write(FileHeader.ToCharArray()); // write a header
-            bw.Write((ushort)bmWidth);
-            bw.Write((ushort)bmHeight);
-            bw.Write(bmData);
+            bw.Write((ushort)bitmap.Width);
+            bw.Write((ushort)bitmap.Height);
+            bw.Write(bitmap.Data);
             bw.Close();
 
             // save filename
@@ -351,11 +352,11 @@ namespace VGAPainter
             mouseY /= zoom;
 
             // don't do anything out of scope
-            if (mouseX >= bmWidth || mouseY >= bmHeight) return;
+            if (mouseX >= bitmap.Width || mouseY >= bitmap.Height) return;
 
             // precalc offset and boundary check
-            int offset = mouseY * bmWidth + mouseX;
-            if (offset < 0 || offset >= bmData.Length) return;
+            int offset = mouseY * bitmap.Width + mouseX;
+            if (offset < 0 || offset >= bitmap.Data.Length) return;
 
             // pixel changes to commit to history
             var changes = new HashSet<PixelChange>();
@@ -363,8 +364,8 @@ namespace VGAPainter
             switch (drawMode)
             {
                 case DrawMode.Draw:
-                    var change = DrawPixel(mouseX, mouseY, color);
-                    if (change != null) changes.Add(change);
+                    PixelChange? change = DrawPixel(mouseX, mouseY, color);
+                    if (change != null) changes.Add(change.Value);
                     redoStack.Clear();
                     break;
                 case DrawMode.Fill:
@@ -373,7 +374,7 @@ namespace VGAPainter
                     redoStack.Clear();
                     break;
                 case DrawMode.Picker:
-                    colorSelector.Items[bmData[offset]].Selected = true;
+                    colorSelector.Items[bitmap.Data[offset]].Selected = true;
                     break;
                 default:
                     throw new NotImplementedException("Draw mode " + drawMode.ToString() + " not implemented.");
@@ -396,9 +397,10 @@ namespace VGAPainter
             var result = newDialog.ShowDialog();
             if (result != DialogResult.OK) return;
 
-            bmWidth = (int)newDialog.bmWidth.Value;
-            bmHeight = (int)newDialog.bmHeight.Value;
-            bmData = new byte[bmWidth * bmHeight];
+            var bmWidth = (int)newDialog.bmWidth.Value;
+            var bmHeight = (int)newDialog.bmHeight.Value;
+
+            bitmap = new CharBitmap(bmWidth, bmHeight);
 
             FullRedraw();
 
@@ -435,18 +437,18 @@ namespace VGAPainter
 
         #endregion
 
-        private PixelChange DrawPixel(int x, int y, byte color)
+        private PixelChange? DrawPixel(int x, int y, byte color)
         {
             // precalc offset and check boundary
-            int offset = y * bmWidth + x;
-            if (offset < 0 || offset >= bmData.Length) return null;
+            int offset = y * bitmap.Width + x;
+            if (offset < 0 || offset >= bitmap.Data.Length) return null;
 
             // don't do anything if the pixel is the same
-            if (bmData[offset] == color) return null;
+            if (bitmap.Data[offset] == color) return null;
 
             // change the pixel and note the change
-            var change = new PixelChange(offset, bmData[offset], color);
-            bmData[offset] = color;
+            var change = new PixelChange(offset, bitmap.Data[offset], color);
+            bitmap.Data[offset] = color;
 
             // update the bitmap
             var gfx = Graphics.FromImage(canvas);
@@ -461,40 +463,40 @@ namespace VGAPainter
         private ISet<PixelChange> FloodFill(int x, int y, byte color)
         {
             // precalc offset and check boundary
-            int offset = y * bmWidth + x;
-            if (offset < 0 || offset >= bmData.Length) return null;
+            int offset = y * bitmap.Width + x;
+            if (offset < 0 || offset >= bitmap.Data.Length) return null;
 
             var changes = new HashSet<PixelChange>();
             var visitedPixels = new HashSet<int>();
 
             var toVisit = new Queue<int>();
-            toVisit.Enqueue(y * bmWidth + x);
+            toVisit.Enqueue(y * bitmap.Width + x);
 
             var gfx = Graphics.FromImage(canvas);
 
             while (toVisit.Count > 0)
             {
                 var pixelOffset = toVisit.Dequeue();
-                var pixelColor = bmData[pixelOffset];
+                var pixelColor = bitmap.Data[pixelOffset];
                 if (visitedPixels.Contains(pixelOffset)) continue;
 
                 changes.Add(new PixelChange(pixelOffset, pixelColor, color));
-                bmData[pixelOffset] = color;
+                bitmap.Data[pixelOffset] = color;
                 gfx.FillRectangle(new SolidBrush(palette[color]),
-                                  (pixelOffset % bmWidth) * zoom, 
-                                  (pixelOffset / bmWidth) * zoom,
+                                  (pixelOffset % bitmap.Width) * zoom, 
+                                  (pixelOffset / bitmap.Width) * zoom,
                                   zoom - (showGrid.Checked ? 1 : 0),
                                   zoom - (showGrid.Checked ? 1 : 0));
 
                 visitedPixels.Add(pixelOffset);
 
-                int[] diff = new int[] { -bmWidth, bmWidth, -1, 1 };
+                int[] diff = new int[] { -bitmap.Width, bitmap.Width, -1, 1 };
                 foreach (int offsetDiff in diff)
                 {
                     var nextOffset = pixelOffset + offsetDiff;
                     try
                     {
-                        if (pixelColor != bmData[nextOffset]) continue;
+                        if (pixelColor != bitmap.Data[nextOffset]) continue;
                         if (visitedPixels.Contains(nextOffset)) continue;
 
                         toVisit.Enqueue(nextOffset);
@@ -528,10 +530,10 @@ namespace VGAPainter
             var action = undoStack.Pop();
 
             // undo it
-            foreach (var change in action.changes)
+            foreach (var change in action.Changes)
             {
-                int x = change.Offset % bmWidth;
-                int y = change.Offset / bmWidth;
+                int x = change.Offset % bitmap.Width;
+                int y = change.Offset / bitmap.Width;
                 DrawPixel(x, y, change.OldColor);
             }
 
@@ -548,10 +550,10 @@ namespace VGAPainter
             var action = redoStack.Pop();
 
             // undo it
-            foreach (var change in action.changes)
+            foreach (var change in action.Changes)
             {
-                int x = change.Offset % bmWidth;
-                int y = change.Offset / bmWidth;
+                int x = change.Offset % bitmap.Width;
+                int y = change.Offset / bitmap.Width;
                 DrawPixel(x, y, change.NewColor);
             }
 
@@ -622,9 +624,7 @@ namespace VGAPainter
             importer.ReportProgress(100, new ImporterStatus(true, bmData.Length));
 
             // save the bitmap data
-            this.bmWidth = bmWidth;
-            this.bmHeight = bmHeight;
-            this.bmData = bmData;
+            this.bitmap = new CharBitmap(bmData, bmWidth);
             this.canvas = RenderBitmap(this.zoom, this.showGrid.Checked);
 
             e.Result = true;

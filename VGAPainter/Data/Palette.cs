@@ -5,12 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace VGAPainter
+namespace VGAPainter.Data
 {
     /// <summary>
     /// A 256-color palette
     /// </summary>
-    class Palette
+    public class Palette
     {
         public const string FileHeader = "TGRP";
 

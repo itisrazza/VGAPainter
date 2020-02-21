@@ -8,21 +8,23 @@ namespace VGAPainter
 {
     class HistoryEvent
     {
-        public ISet<PixelChange> changes { get; }
+        public ISet<PixelChange> Changes { get; }
 
         public HistoryEvent(PixelChange singleChange)
         {
-            changes = new HashSet<PixelChange>();
-            changes.Add(singleChange);
+            Changes = new HashSet<PixelChange>
+            {
+                singleChange
+            };
         }
 
         public HistoryEvent(ISet<PixelChange> pixelChanges)
         {
-            changes = pixelChanges;
+            Changes = pixelChanges;
         }
     }
 
-    class PixelChange
+    struct PixelChange
     {
         public byte OldColor { get; }
 
