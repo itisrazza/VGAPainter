@@ -1,0 +1,87 @@
+:root {
+  margin: 0;
+  background: #0000aa;
+  color: #aaaaaa;
+  font-family: "DOS", "DOS Fallback", monospace;
+  font-size: 16px;
+}
+
+body {
+  margin: 16px 8px 32px;
+  line-height: 16px;
+}
+
+a {
+  text-decoration: none;
+  color: #00aaaa;
+}
+
+a:hover,
+a:focus {
+  background: #00aaaa;
+  color: white;
+}
+
+a::before {
+  content: "[";
+}
+
+a::after {
+  content: "]";
+}
+
+a.img {
+  background: unset;
+  color: unset;
+}
+
+a.img::before {
+  content: "";
+}
+
+a.img::after {
+  content: "";
+}
+
+b {
+  font-weight: unset;
+  color: white;
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: #aaaaaa;
+  color: black;
+  padding: 0 8px;
+}
+
+footer > .end {
+  float: right;
+}
+
+footer a {
+  color: unset;
+}
+
+footer a:hover,
+footer a:focus {
+  color: #aaaaaa;
+  background: black;
+}
+
+@font-face {
+  font-family: "DOS";
+  src: url(fonts/Web_IBM_VGA_8x16.woff) format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "DOS Fallback";
+  src: url(fonts/Web_IBM_VGA_8x16.woff) format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
