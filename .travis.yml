@@ -1,5 +1,5 @@
 language: csharp
-solution: VGAPainter.sln
+solution: VGAPainter/VGAPainter.csproj
 deploy:
   provider: releases
   api_key:
