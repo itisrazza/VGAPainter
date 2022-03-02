@@ -81,7 +81,8 @@ namespace VGAPainter.Forms
 
         void ColorSelector_Update()
         {
-            // 
+            colorSelector.BeginUpdate();
+
             while (colorSelector.Items.Count > 0)
                 colorSelector.Items.RemoveAt(0);
 
@@ -103,6 +104,8 @@ namespace VGAPainter.Forms
                 colorSelector.Items.Add(listItem);
                 imgList.Images.Add(bm);
             }
+
+            colorSelector.EndUpdate();
 
             FullRedraw();
         }
@@ -821,14 +824,14 @@ namespace VGAPainter.Forms
             {
                 bitmap = new Bitmap(openImport.FileName);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
-                // what the blin?
-                throw ex;
+                MessageBox.Show(this, "The image is not of a valid format.", "Failed to import image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(this, ex.Message, "Failed to import image", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 

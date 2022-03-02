@@ -1,4 +1,4 @@
-# Raresh's VGA Painter
+# VGAPainter
 
 [![License: WTFPL](https://img.shields.io/github/license/thegreatrazz/VGAPainter?style=flat-square)](LICENSE.txt)
 [![Travis Build Status](https://img.shields.io/travis/thegreatrazz/VGAPainter?style=flat-square)](https://travis-ci.org/thegreatrazz/VGAPainter)
