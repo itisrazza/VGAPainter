@@ -316,7 +316,7 @@
             this.menuView.Name = "menuView";
             this.menuView.Size = new System.Drawing.Size(44, 20);
             this.menuView.Text = "&View";
-            this.menuView.Click += new System.EventHandler(this.ViewToolStripMenuItem_Click);
+            this.menuView.MouseEnter += new System.EventHandler(this.ViewToolStripMenuItem_Click);
             // 
             // zoomLabel
             // 
