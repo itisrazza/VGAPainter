@@ -75,7 +75,7 @@ namespace VGAPainter.Data
         {
             var bw = new BinaryWriter(outStream, Encoding.ASCII);
             bw.Write(FileHeader.ToCharArray());
-            
+
             foreach (var color in colors)
             {
                 byte[] colorInfo = { color.R, color.G, color.B };
@@ -100,23 +100,7 @@ namespace VGAPainter.Data
                 var vgaPalette = new Palette();
                 int index = 0;  // an index into the array
 
-                // CGA color palette
-                vgaPalette[index++] = Color.FromArgb(0, 0, 0);          // 0 - black
-                vgaPalette[index++] = Color.FromArgb(0, 0, 170);        // 1 - blue
-                vgaPalette[index++] = Color.FromArgb(0, 170, 0);        // 2 - green 
-                vgaPalette[index++] = Color.FromArgb(0, 170, 170);      // 3 - cyan
-                vgaPalette[index++] = Color.FromArgb(170, 0, 0);        // 4 - red 
-                vgaPalette[index++] = Color.FromArgb(170, 0, 170);      // 5 - magenta
-                vgaPalette[index++] = Color.FromArgb(170, 85, 170);     // 6 - brown
-                vgaPalette[index++] = Color.FromArgb(170, 170, 170);    // 7 - gray
-                vgaPalette[index++] = Color.FromArgb(85, 85, 85);       // 8 - lighter black
-                vgaPalette[index++] = Color.FromArgb(85, 85, 255);      // 9 - lighter blue
-                vgaPalette[index++] = Color.FromArgb(85, 255, 85);      // A - lighter green 
-                vgaPalette[index++] = Color.FromArgb(85, 255, 255);     // B - lighter cyan
-                vgaPalette[index++] = Color.FromArgb(255, 85, 85);      // C - lighter red 
-                vgaPalette[index++] = Color.FromArgb(255, 85, 255);     // D - lighter magenta
-                vgaPalette[index++] = Color.FromArgb(255, 255, 85);     // E - lighter brown
-                vgaPalette[index++] = Color.FromArgb(255, 255, 255);    // F - lighter gray
+                index = FillCGAPalette(vgaPalette, index);
 
                 // greyscale
                 {
@@ -155,6 +139,28 @@ namespace VGAPainter.Data
 
                 return vgaPalette;
             }
+        }
+
+        private static int FillCGAPalette(Palette palette, int index)
+        {
+            // CGA color palette
+            palette[index++] = Color.FromArgb(0, 0, 0);          // 0 - black
+            palette[index++] = Color.FromArgb(0, 0, 170);        // 1 - blue
+            palette[index++] = Color.FromArgb(0, 170, 0);        // 2 - green 
+            palette[index++] = Color.FromArgb(0, 170, 170);      // 3 - cyan
+            palette[index++] = Color.FromArgb(170, 0, 0);        // 4 - red 
+            palette[index++] = Color.FromArgb(170, 0, 170);      // 5 - magenta
+            palette[index++] = Color.FromArgb(170, 85, 0);       // 6 - brown
+            palette[index++] = Color.FromArgb(170, 170, 170);    // 7 - gray
+            palette[index++] = Color.FromArgb(85, 85, 85);       // 8 - lighter black
+            palette[index++] = Color.FromArgb(85, 85, 255);      // 9 - lighter blue
+            palette[index++] = Color.FromArgb(85, 255, 85);      // A - lighter green 
+            palette[index++] = Color.FromArgb(85, 255, 255);     // B - lighter cyan
+            palette[index++] = Color.FromArgb(255, 85, 85);      // C - lighter red 
+            palette[index++] = Color.FromArgb(255, 85, 255);     // D - lighter magenta
+            palette[index++] = Color.FromArgb(255, 255, 85);     // E - lighter brown
+            palette[index++] = Color.FromArgb(255, 255, 255);    // F - lighter gray
+            return index;
         }
 
         public static Palette Grayscale
