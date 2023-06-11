@@ -7,8 +7,8 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="57347RareshNistor.VGAPainter"
-    Publisher="CN=DC9F6063-3363-4707-834D-9AB5B098E9EA"
+    Name="RareshNistor.VGAPainter"
+    Publisher="CN=Raresh Nistor"
     Version="0.6.0.0" />
 
   <Properties>
